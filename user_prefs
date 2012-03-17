@@ -1,0 +1,9 @@
+use_bayes 1
+bayes_file_mode 0600
+bayes_ignore_header X-MailScanner
+bayes_ignore_header X-MailScanner-Information
+bayes_ignore_header X-MailScanner-SpamCheck
+bayes_ignore_header X-MailScanner-SpamScore
+bayes_path /home/mycpanelusername/.spamassassin/bayes
+required_score 4.0
+rewrite_header subject {SPAM _SCORE(0)_}
