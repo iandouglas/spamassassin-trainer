@@ -7,7 +7,7 @@ Up until about late 2010, cPanel didn't give you the means to train your own Spa
 There are also heavy amounts of commenting in the Perl script itself, but more background, etc., can be found at http://iandouglas.com
 
 ## Support
-I am available for support if you need assistance with the setup of the script, via paid one-on-one coaching via Google Helpouts.
+I am available for support if you need assistance with the setup of the script, via paid one-on-one coaching via Google Helpouts: http://goo.gl/5l8ufr
 
 ## Configuration
 
