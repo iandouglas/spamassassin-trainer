@@ -20,7 +20,7 @@ There are only two things you need to change in the Perl script and only one cha
 ## Installation
 
 - sa-trainer.cgi
-  Place this file into your public_html/cgi-bin folder and set its permissions to 755
+ - Place this file into your public_html/cgi-bin folder and set its permissions to 755
 
 - user_prefs
-  Place this file into your home directory in a subfolder called ".spamassassin" (with the preceeding period in the filename)
+ - Place this file into your home directory in a subfolder called ".spamassassin" (with the preceeding period in the filename)
