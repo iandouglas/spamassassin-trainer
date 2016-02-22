@@ -257,7 +257,7 @@ if ($continue && ( ! -e "$sa_config" ) ) {
 if (!$continue) {
 	print '<p style="color:#F00">ERROR: '.$error_msg.'. Execution cannot continue until this is fixed</p>' ;
 }
- sanity checks
+# sanity checks
 else { # sanity check passed
 	$| ;
 	$global_scanspam = 0 ;
