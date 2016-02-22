@@ -1,14 +1,14 @@
 #!/usr/bin/perl
 use CGI::Carp qw(fatalsToBrowser) ;
-use vars qw($version $callback_to_iandouglasdotcom $callback_response);
+use vars qw($version);
 
 print "Content-type: text/html\n\n" ;
 
-#####[[[
+####
 # sa-trainer.cgi
-$version = "4.02" ;
+$version = "4.04" ;
 #
-# sa-trainer.cgi by Ian Douglas, iandouglas.com, Copyright 2004-2013
+# sa-trainer.cgi by Ian Douglas, iandouglas.com, Copyright 2004-2016
 # Some Rights Reserved under a Creative Commons "Attribution Non-commercial"
 # license, http://creativecommons.org/licenses/by-nc/3.0/
 # (you are free to use, copy and modify this code and redistribute it, but
@@ -16,29 +16,42 @@ $version = "4.02" ;
 # NOT be for for-profit purposes -- you got it from me for free, do the same
 # for others please)
 #
-# To reach me for support, please contact me via Email at either of the
-# following addresses: ian.douglas@iandouglas.com
+# To reach me for support, please contact me via Email at the following
+# address: ian.douglas@iandouglas.com
 #
 # This script has always been, and will continue to be, free of charge to 
 # obtain. If you'd like to show appreciation for the work that's gone into it,
 # you're more than welcome to send in a PayPal donation of any amount, however
 # you are under NO OBLIGATION whatsoever to donate for my time.
-#]]]
-#####[[[ CONFIGURATION
-# setting this to 'Y' will trigger a callback check to iandouglas.com to make
-# sure you are running the latest copy of the script; this is totally optional
-# and no personal data is sent from your system -- it merely retrieves the
-# latest version number and compares it to this version of the script, and
-# notifies you if my copy at iandouglas.com is newer.
-# Commenting out this line, deleting it completely, or setting it to anything
-# other than a capital 'Y' value will turn off the callback feature.
-# THIS IS SAFE TO LEAVE SET TO "Y" UNLESS iandouglas.com IS OFFLINE
-$callback_to_iandouglasdotcom = "Y" ;
 
-#{{{CONFIGBLOCK}}}
-#####]]] CONFIGURATION IS COMPLETE!
+#### CONFIGURATION
+#
+# The following configuration assumes that every mailbox under domain.com
+# will have an IMAP folder called "scan-ham" and "scan-spam" will be
+# created and exists to hold ham and spam, respectively. These mail folders
+# will need to be emptied and then compacted/purged from time to time.
+# This block also assumes that cPanel is using Maildir for storing your
+# email (which has long been the default). There are other configuration
+# options using the commented variables like global_ham_email or 
+# global_spam_email but I *highly* discourage their use since SpamAssassin
+# will be FAR less accurate screening your spam/ham.
 
-############################################[[[
+$my_domain = "domain.com" ;
+$cpanel_username = "cpanelusername" ;
+#$mail_format = "Mbox" ;
+$mail_format = "Maildir" ;
+#$global_ham_email = "globalham" ; # @ domain.com
+$global_hambox = "scan-ham" ;
+$check_user_Inbox_for_ham = "N" ;
+#$user_hambox = "scan-ham" ;
+#$global_spam_email = "global-spam" ; # @ domain.com
+$check_user_spamboxes_for_spam = "N" ;
+#$user_spambox = "scan-spam" ;
+$global_spambox = "scan-spam" ;
+
+#### CONFIGURATION IS COMPLETE!
+
+############################################
 # NOTHING SHOULD NEED TO CHANGE BELOW THIS LINE
 # Bear in mind that modifications to this script will result in a longer time 
 # assisting you in solving any related problems you might encounter along the 
@@ -46,24 +59,7 @@ $callback_to_iandouglasdotcom = "Y" ;
 # pretty much always be free of charge), please DO send me a complete copy of 
 # your script including any changes or modifications
 
-$callback_response = '';
-if ($callback_to_iandouglasdotcom eq 'Y') { #[[[
-  use LWP::UserAgent ;
-  my $ua = new LWP::UserAgent ;
-  my $url = "http://iandouglas.com/sa-trainer/latest-version.txt" ;
-# callback to fetch latest version number
-  my $req = new HTTP::Request GET => $url ;
-  my $res = $ua->request($req) ;
-  if ($res->is_success) {
-    my $id_version = $res->content ;
-    if (($id_version + 0) > ($version + 0)) {
-      $callback_response = '<font style="color:#F00">NOTICE: A newer version of this script is available (v'.$id_version.') at <a href="http://iandouglas.com/sa-trainer">iandouglas.com</a>.</font><br />' ;
-    }
-  } else {
-    die "Could not connect to iandouglas.com to check for a new version of this software.<br />If this error persists, please <a href='mailto:iandouglas736\@gmail.com'>contact Ian Douglas</a> for assistance." ;
-  }
-} #]]]
-#[[[ HTML
+# HTML
 print <<__EOT__;
 <html>
 <head>
@@ -126,40 +122,34 @@ print <<__EOT__;
         <li class="linkonly">
 					<a href="http://www.iandouglas.com/sa-trainer/index.php">
 						<span class="glyphicon glyphicon-wrench"></span>
-						Build a New Script
+						Important News about my SpamAssassin Trainer!
 					</a>
 				</li>
-        <li class="linkonly">
-					<a href="mailto:ian.douglas\@iandouglas.com?subject=SpamAssassin Trainer Support">
-						<span class="glyphicon glyphicon-question-sign"></span>
-						Email Support
-					</a></li>
-        <li><a href="https://helpouts.google.com/113763167140406107715/ls/bbcf42fd8de12842">
-					<img height="25" src="https://www.google.com/help/hc/images/helpouts/helpouts_icon_48.png"> Live Support via Google Helpouts</a></li>
       </ul>
     </div>
   </div>
 </div>
 
 <div class="container skipnav">
-  <div class="starter-template">
-    <h1>SpamAssassin Trainer</h1>
-		<p>$callback_response</p>
-	</div>
+    <div class="starter-template">
+      <h1>SpamAssassin Trainer</h1>
+      <div style="width:100%; background: #F7FCC7; border: 1px #D67200 solid; margin-bottom: 10px;">
+<strong>DEPRECATION NOTICE:</strong> As of March 1st, 2016, I will no longer be supporting this SpamAssassin trainer script. I will maintain bug fixes at a <a href="https://github.com/iandouglas/spamassassin-trainer">GitHub repo I set up</a> a long time ago for the script, but I will no longer be supporting users who choose to download and use the script. I've been helping folks battle spam using this script in one form or another since early 2003, and it's time to focus on other things. I truly appreciate the support of everyone who has downloaded sa-trainer over the years.
+      </div>
+    </div>
 
 	<div class="container bottomblock">
 		<div class="starter-template">
-		<p>sa-trainer.cgi version $version by Ian Douglas, iandouglas.com, Copyright 2004-2013<br />
+		<p>sa-trainer.cgi version $version by Ian Douglas, iandouglas.com, Copyright 2004-2016<br />
 		Some Rights Reserved under a <a href="http://creativecommons.org/licenses/by-nc/3.0/">Creative Commons "Attribution Non-commercial" license</a><br />
-		NEW: Get live support using <a href="https://helpouts.google.com/113763167140406107715/ls/bbcf42fd8de12842">Google Helpouts</a>.  Free support options and extra documentation found <a href="http://www.iandouglas.com/spamassassin-trainer">here</a>.
 		</div>
 	</div>
 
 __EOT__
 
-#]]]
 
-#[[[ sanity checks
+
+# sanity checks
 $continue = 1 ;
 $error_msg = '' ;
 
@@ -171,17 +161,19 @@ if ($my_domain eq 'mydomain.com' || !$my_domain) {
 	$continue = 0 ;
 	$error_msg = 'You need to properly configure $my_domain within the script, or the script will not operate' ;
 }
-if (!$path_to_salearn) { #[[[
+if (!$path_to_salearn) {
 	$salearn = `which sa-learn` ;
 	chop($salearn) ;
-} else {
+}
+if (!$path_to_salearn) {
+    $path_to_salearn = '/usr/local/cpanel/3rdparty/bin/sa-learn';
 	$salearn = $path_to_salearn ;
 	if ( ! -e "$salearn") {
 		$continue = 0 ;
 		$error_msg = 'The setting you enabled for $path_to_salearn is invalid ('.$path_to_salearn.' was not found)' ;
 	}
-}#]]]
-#[[[ detect base mail path
+}
+# detect base mail path
 $basepath = "/home/$cpanel_username" ;
 $basemailpath = '' ;
 if ($continue && ( -e "$basepath/mail" ) ) {
@@ -200,8 +192,8 @@ if ($continue && ( -e "$basepath/mail" ) ) {
 		$continue = 0 ;
 		$error_msg = 'Your base mail folder could not be found. Please configure the $base_mail_folder variable within the script.' ;
 	}
-} #]]]
-#[[[ autodetect mail format here, and set mail_format appropriately
+} 
+# autodetect mail format here, and set mail_format appropriately
 if (!$mail_format && ( -d "$basemailpath/cur/" || -d "$basemailpath/.spam/cur/" )) {
 	print '<p>Autodetected mail storage as Maildir; you could speed up this script slightly if you configure $mail_format in the script to "Maildir"</p>' ;
 	$mail_format = "Maildir" ;
@@ -213,19 +205,19 @@ if (!$mail_format && ( -f "$basemailpath/spam" || -f "$basemailpath/inbox" || -f
 if ($continue && !$mail_format) {
 	$error_msg = 'The script was unable to detect your Email storage type (Mbox or Maildir). Please contact your hosting provider to determine which it is, and configure the $mail_format variable within the script manually.' ;
 	$continue = 0 ;
-} #]]]
+} 
 if ($continue && !$salearn) {
 	$error_msg = 'The script could not autodetect where the SpamAssassin training application is on your server, please configure the $path_to_salearn variable within the script' ;
 	$continue = 0 ;
 }
-#[[[ configure domain list for scanning
+# configure domain list for scanning
 @domains = () ;
 push (@domains, $my_domain) ;
 foreach $addon_domain (@addon_domain_list) {
 	push (@domains, $addon_domain) ;
 }
-#]]]
-if ($continue) { #[[[ sanity checks on global spamboxes and user spamboxes
+
+if ($continue) { # sanity checks on global spamboxes and user spamboxes
 	if ($global_spam_email && $global_spambox) {
 		$error_msg = 'You cannot enable both $global_spam_email <u>and</u> $global_spambox, you must choose one or the other' ;
 		$continue = 0 ;
@@ -239,8 +231,8 @@ if ($continue) { #[[[ sanity checks on global spamboxes and user spamboxes
 		$error_msg = 'You cannot disable $global_spam_email <u>and</u> $global_spambox <u>and</u> $check_user_spamboxes_for_spam, you must choose one of the three for scanning spam messages' ;
 		$continue = 0 ;
 	}
-} #]]]
-if ($continue) { #[[[ sanity checks on global hamboxes and user inboxes
+} 
+if ($continue) { # sanity checks on global hamboxes and user inboxes
 	if ($global_ham_email && $global_hambox) {
 		$error_msg = 'You cannot enable both $global_ham_email <u>and</u> $global_hambox, you must choose one or the other' ;
 		$continue = 0 ;
@@ -254,7 +246,7 @@ if ($continue) { #[[[ sanity checks on global hamboxes and user inboxes
 		$error_msg = 'You cannot disable $global_ham_email <u>and</u> $global_hambox <u>and</u> $check_user_Inbox_for_ham, you must choose one of the three for scanning non-spam messages' ;
 		$continue = 0 ;
 	}
-} #]]]
+} 
 
 $sa_config = "$basepath/.spamassassin/user_prefs" ;
 if ($continue && ( ! -e "$sa_config" ) ) {
@@ -265,12 +257,12 @@ if ($continue && ( ! -e "$sa_config" ) ) {
 if (!$continue) {
 	print '<p style="color:#F00">ERROR: '.$error_msg.'. Execution cannot continue until this is fixed</p>' ;
 }
-#]]] sanity checks
-else { #[[[ sanity check passed
+ sanity checks
+else { # sanity check passed
 	$| ;
 	$global_scanspam = 0 ;
 	$global_scanham = 0 ;
-	if ($global_spambox) { #[[[
+	if ($global_spambox) {
 		print "<p>Checking Global Spambox for SPAM messages:<br />" ;
 		$global_scanspam++ ;
 		$this_users_spambox = '' ;
@@ -288,8 +280,8 @@ else { #[[[ sanity check passed
 		} else {
 			print '<p>WARNING: Global spam mailbox ('."$basemailpath/$global_spambox".') could not be found, skipping global SPAM scan</p>' ;
 		}
-	#]]]
-	} elsif ($global_spam_email) { #[[[
+	
+	} elsif ($global_spam_email) {
 		print "<p>Checking Global Email-based Spambox for SPAM messages:<br />" ;
 		$global_scanspam++ ;
 		$this_users_spambox = '' ;
@@ -307,7 +299,7 @@ else { #[[[ sanity check passed
 		} else {
 			print '<p>WARNING: Global spam Email mailbox ('."$basemailpath/$my_domain/$global_spambox".') could not be found, skipping '.$username.'\'s SPAM scan</p>' ;
 		}
-	} #]]]
+	} 
 	if ($global_ham_email || $global_hambox) {
 		# flag it so the individual ham boxes will be skipped, but we always scan ham last anyway
 		$global_scanham = 1 ;
@@ -316,7 +308,7 @@ else { #[[[ sanity check passed
 	if (!$global_scanspam || !$global_scanham) {
 		foreach $domain (@domains) {
 			print '<p><b>Training SpamAssassin for '.$domain.':</b></p>' ;
-			#[[[ fetch email accounts for $domain
+			# fetch email accounts for $domain
 			my @logins ;
 			opendir(DH,"$basemailpath/$domain") ;
 			while (my $file = readdir(DH)) {
@@ -327,10 +319,10 @@ else { #[[[ sanity check passed
 				}
 			}
 			closedir(DH) ;
-			#]]]
+			
 			foreach my $username (sort @logins) {
 				if (!$global_scanspam) {
-					if (lc($check_user_spamboxes_for_spam) eq 'y') { #[[[
+					if (lc($check_user_spamboxes_for_spam) eq 'y') {
 						$this_users_spambox = '' ;
 						if ($mail_format eq "Maildir" && ( -e "$basemailpath/$domain/$username/.$user_spambox/cur" )) {
 							$this_users_spambox = "$basemailpath/$domain/$username/.$user_spambox" ;
@@ -351,10 +343,10 @@ else { #[[[ sanity check passed
 						} else {
 							print 'WARNING: Could not find spambox for '.$username.'@'.$domain.', cannot scan SPAM<br />' ;
 						}
-					} #]]]
+					} 
 				}
 				if (!$global_scanham) {
-				if (lc($check_user_Inbox_for_ham) eq 'n') { #[[[
+				if (lc($check_user_Inbox_for_ham) eq 'n') {
 					$this_users_hambox = '' ;
 					if ($mail_format eq "Maildir" && ( -e "$basemailpath/$domain/$username/.$user_hambox/cur" )) {
 						$this_users_hambox = "$basemailpath/$domain/$username/.$user_hambox" ;
@@ -375,8 +367,8 @@ else { #[[[ sanity check passed
 					} else {
 						print 'WARNING: Could not find hambox for '.$username.'@'.$domain.', cannot scan HAM<br />' ;
 					}
-#]]]
-				} elsif (lc($check_user_Inbox_for_ham) eq 'y') { #[[[
+
+				} elsif (lc($check_user_Inbox_for_ham) eq 'y') {
 					$this_users_hambox = '' ;
 					if ($mail_format eq "Maildir" && ( -e "$basemailpath/$domain/$username/cur" )) {
 						$this_users_hambox = "$basemailpath/$domain/$username" ;
@@ -392,13 +384,13 @@ else { #[[[ sanity check passed
 					} else {
 						print 'WARNING: Could not autodetect Inbox for '.$username.'@'.$domain.', cannot scan HAM<br />' ;
 					}
-				} #]]]
+				} 
 				}
 			}
 		}
 	}
 	if ($global_scanham) {
-		if ($global_ham_email) { #[[[
+		if ($global_ham_email) {
 			print "<p>Checking Global Email-based Hambox for HAM messages:<br />" ;
 			$global_scanham++ ;
 			$this_users_hambox = '' ;
@@ -415,13 +407,13 @@ else { #[[[ sanity check passed
 				&check_ham("$this_users_hambox",$sa_config,$mail_format,1) ;
 			} else {
 				print '<p>WARNING: Global ham Email mailbox ('."$basemailpath/$my_domain/$global_hambox".') could not be found, skipping '.$username.'\'s HAM scan</p>' ;
-			} #]]]
-		} elsif ($global_hambox) { #[[[
+			} 
+		} elsif ($global_hambox) {
 			print "<p>Checking Global Hambox for HAM messages:<br />" ;
 			$global_scanham++ ;
 			$this_users_hambox = '' ;
 			if ($mail_format eq "Maildir") {
-				if ($global_hamebox =~ /\// && ( -e "$basemailpath/$global_hambox/cur" )) {
+				if ($global_hambox =~ /\// && ( -e "$basemailpath/$global_hambox/cur" )) {
 					$this_users_hambox = "$basemailpath/$global_hambox" ;
 				} elsif ( -e "$basemailpath/.$global_hambox/cur" ) {
 					$this_users_hambox = "$basemailpath/.$global_hambox" ;
@@ -434,9 +426,9 @@ else { #[[[ sanity check passed
 			} else {
 				print '<p>WARNING: Global ham mailbox ('."$basemailpath/$global_hambox".') could not be found, skipping '.$username.'\'s HAM scan</p>' ;
 			}
-		}	#]]]
+		}	
 	}
-#[[[ dump magic bits, display information for the users
+# dump magic bits, display information for the users
 #
 	$result = `$salearn --dump magic` ;
 	#print "<pre>".$result."</pre>" ;
@@ -472,11 +464,11 @@ else { #[[[ sanity check passed
 	#print "Newest 'atime' element in bayesian database: $ntime<br />" ;
 	#print "Last token expiry 'atime' in bayesian database: $xtime<br />" ;
 # print out this information into something meaningful
-#]]]
-	print '<p><a href="/cgi-bin/'.$0.'">re-scan mailboxes</a><br />' ;
-} #]]]
 
-sub check_spam #[[[
+	print '<p><a href="/cgi-bin/'.$0.'">re-scan mailboxes</a><br />' ;
+} 
+
+sub check_spam
 {
 	my ($spambox,$saconfig,$mailformat) = @_ ;
 	if ($mailformat eq 'Maildir' && ( -e "$spambox/cur" )) {
@@ -487,8 +479,8 @@ sub check_spam #[[[
 		$cmd = "$salearn -p $saconfig --spam --mbox $spambox" ;
 	}
 	print `$cmd`."<br />" ;
-} #]]]
-sub check_ham #[[[
+} 
+sub check_ham
 {
 	my ($hambox,$saconfig,$mailformat,$useignores) = @_ ;
 
@@ -500,8 +492,8 @@ sub check_ham #[[[
 		$cmd = "$salearn -p $saconfig ".($useignores == 1 ? "--use-ignores" : "")." --mbox --ham $hambox" ;
 	}
 	print `$cmd`."<br />" ;
-} #]]]
-sub get_bit #[[[
+} 
+sub get_bit
 {
 	my($pattern,@bits) = @_ ;
 
@@ -513,5 +505,5 @@ sub get_bit #[[[
 	}
 	($junk,$junk,$piece,$junk) = split (/ /,$piece) ;
 	return $piece ;
-} #]]]
+} 
 # eof ]]]
